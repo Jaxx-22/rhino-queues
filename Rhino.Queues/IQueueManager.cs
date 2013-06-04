@@ -5,7 +5,7 @@ using Rhino.Queues.Protocol;
 
 namespace Rhino.Queues
 {
-    public interface IQueueManager : IDisposable
+    public interface IQueueManager : INeedMessageNotification, IDisposable
     {
         QueueManagerConfiguration Configuration { get; set; }
         string Path { get; }
@@ -35,14 +35,11 @@ namespace Rhino.Queues
         PersistentMessage PeekById(string queueName, MessageId id);
         string[] GetSubqueues(string queueName);
         int GetNumberOfMessages(string queueName);
-        void FailedToSendTo(Endpoint endpointThatWeFailedToSendTo);
     	void DisposeRudely();
 
         event Action<object, MessageEventArgs> MessageQueuedForSend;
         event Action<object, MessageEventArgs> MessageSent;
         event Action<object, MessageEventArgs> MessageQueuedForReceive;
         event Action<object, MessageEventArgs> MessageReceived;
-
-        void OnMessageSent(MessageEventArgs messageEventArgs);
     }
 }

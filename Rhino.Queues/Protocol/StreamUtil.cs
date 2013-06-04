@@ -1,31 +1,23 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Net;
-using Common.Logging;
-using Wintellect.Threading.AsyncProgModel;
+using System.Threading.Tasks;
 
 namespace Rhino.Queues.Protocol
 {
-    public class StreamUtil
+    public static class StreamExtensions
     {
-        public static IEnumerator<int> ReadBytes(
-            byte[] buffer, Stream stream, AsyncEnumerator ae, string type, bool expectedToHaveNoData)
+        public static async Task ReadBytesAsync(this Stream stream, byte[] buffer, string type, bool expectedToHaveNoData)
         {
             var totalBytesRead = 0;
 
             while (totalBytesRead < buffer.Length)
             {
-                stream.BeginRead(buffer, totalBytesRead, buffer.Length - totalBytesRead, ae.End(), null);
+                int bytesRead = await stream.ReadAsync(buffer, totalBytesRead, buffer.Length - totalBytesRead);
                
-                yield return 1;
-
-                int bytesRead = stream.EndRead(ae.DequeueAsyncResult());
-
                 if(bytesRead == 0)
                 {
                     if (expectedToHaveNoData)
-                        yield break;
+                        break;
 
                     throw new InvalidOperationException("Could not read value for " + type);
                 }

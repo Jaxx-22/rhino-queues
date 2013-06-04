@@ -48,7 +48,7 @@ namespace Rhino.Queues.Tests.Protocol
 
                 Assert.Equal(1, recievedMsgs.Length);
                 Assert.Equal("hello doggy", recievedMsgs[0].Queue);
-                Assert.Equal(new byte[] { 1, 2, 4, 5, 6 }, recievedMsgs[0].Data);
+                Assert.Equal(new byte[] {1, 2, 4, 5, 6}, recievedMsgs[0].Data);
                 Assert.Equal(new DateTime(2001, 1, 1), recievedMsgs[0].SentAt);
             }
         }
@@ -119,7 +119,7 @@ namespace Rhino.Queues.Tests.Protocol
             var wait = new ManualResetEvent(false);
 
             Message[] recievedMsgs = null;
-            using (var reciever = new Receiver(new IPEndPoint(IPAddress.Loopback, 23456), messages =>
+            using (var reciever = new Receiver(new IPEndPoint(IPAddress.Loopback, 23599), messages =>
             {
                 recievedMsgs = messages;
                 return MockRepository.GenerateStub<IMessageAcceptance>();
@@ -130,7 +130,7 @@ namespace Rhino.Queues.Tests.Protocol
 
                 new Sender
                 {
-                    Destination = new Endpoint("localhost", 23456),
+                    Destination = new Endpoint("localhost", 23599),
                     Messages = new[]
                     {
                         new Message

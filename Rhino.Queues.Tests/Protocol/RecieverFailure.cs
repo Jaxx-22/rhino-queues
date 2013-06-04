@@ -229,10 +229,10 @@ namespace Rhino.Queues.Tests.Protocol
                     stream.Write(BitConverter.GetBytes(serialize.Length), 0, 4);
                     stream.Write(serialize, 0, serialize.Length);
 
-                    var buffer = new byte[ProtocolConstants.RecievedBuffer.Length];
+                    var buffer = new byte[ProtocolConstants.ReceivedBuffer.Length];
                     stream.Read(buffer, 0, buffer.Length);
 
-                    Assert.Equal(ProtocolConstants.Recieved, Encoding.Unicode.GetString(buffer));
+                    Assert.Equal(ProtocolConstants.Received, Encoding.Unicode.GetString(buffer));
                 }
 
                 wait.WaitOne();
@@ -256,10 +256,10 @@ namespace Rhino.Queues.Tests.Protocol
                     stream.Write(BitConverter.GetBytes(serialize.Length), 0, 4);
                     stream.Write(serialize, 0, serialize.Length);
 
-                    var buffer = new byte[ProtocolConstants.RecievedBuffer.Length];
+                    var buffer = new byte[ProtocolConstants.ReceivedBuffer.Length];
                     stream.Read(buffer, 0, buffer.Length);
 
-                    Assert.Equal(ProtocolConstants.Recieved, Encoding.Unicode.GetString(buffer));
+                    Assert.Equal(ProtocolConstants.Received, Encoding.Unicode.GetString(buffer));
                 }
 
                 wait.WaitOne();
@@ -285,10 +285,10 @@ namespace Rhino.Queues.Tests.Protocol
                     stream.Write(BitConverter.GetBytes(serialize.Length), 0, 4);
                     stream.Write(serialize, 0, serialize.Length);
 
-                    var buffer = new byte[ProtocolConstants.RecievedBuffer.Length];
+                    var buffer = new byte[ProtocolConstants.ReceivedBuffer.Length];
                     stream.Read(buffer, 0, buffer.Length);
 
-                    Assert.Equal(ProtocolConstants.Recieved, Encoding.Unicode.GetString(buffer));
+                    Assert.Equal(ProtocolConstants.Received, Encoding.Unicode.GetString(buffer));
 
                     var bytes = Encoding.Unicode.GetBytes("Unknowledged");
                     stream.Write(bytes, 0, bytes.Length);
@@ -317,10 +317,10 @@ namespace Rhino.Queues.Tests.Protocol
                     stream.Write(BitConverter.GetBytes(serialize.Length), 0, 4);
                     stream.Write(serialize, 0, serialize.Length);
 
-                    var buffer = new byte[ProtocolConstants.RecievedBuffer.Length];
+                    var buffer = new byte[ProtocolConstants.ReceivedBuffer.Length];
                     stream.Read(buffer, 0, buffer.Length);
 
-                    Assert.Equal(ProtocolConstants.Recieved, Encoding.Unicode.GetString(buffer));
+                    Assert.Equal(ProtocolConstants.Received, Encoding.Unicode.GetString(buffer));
 
                     stream.Write(ProtocolConstants.AcknowledgedBuffer, 0, ProtocolConstants.AcknowledgedBuffer.Length);
                 }
@@ -350,10 +350,10 @@ namespace Rhino.Queues.Tests.Protocol
                     stream.Write(BitConverter.GetBytes(serialize.Length), 0, 4);
                     stream.Write(serialize, 0, serialize.Length);
 
-                    var buffer = new byte[ProtocolConstants.RecievedBuffer.Length];
+                    var buffer = new byte[ProtocolConstants.ReceivedBuffer.Length];
                     stream.Read(buffer, 0, buffer.Length);
 
-                    Assert.Equal(ProtocolConstants.Recieved, Encoding.Unicode.GetString(buffer));
+                    Assert.Equal(ProtocolConstants.Received, Encoding.Unicode.GetString(buffer));
 
                     stream.Write(ProtocolConstants.AcknowledgedBuffer, 0, ProtocolConstants.AcknowledgedBuffer.Length);
 

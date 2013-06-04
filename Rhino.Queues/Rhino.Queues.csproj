@@ -10,9 +10,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rhino.Queues</RootNamespace>
     <AssemblyName>Rhino.Queues</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
     <AssemblyOriginatorKeyFile>..\ayende-open-source.snk</AssemblyOriginatorKeyFile>
     <TargetFrameworkProfile />
     <NoWarn>1591</NoWarn>
@@ -29,6 +29,7 @@
     <NoWarn>1607,1591</NoWarn>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\Debug\Rhino.Queues.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -39,6 +40,7 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\Release\Rhino.Queues.xml</DocumentationFile>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Common.Logging">
@@ -52,6 +54,18 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Reactive.Core">
+      <HintPath>..\packages\Rx-Core.2.1.30214.0\lib\Net40\System.Reactive.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Interfaces">
+      <HintPath>..\packages\Rx-Interfaces.2.1.30214.0\lib\Net40\System.Reactive.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.Linq">
+      <HintPath>..\packages\Rx-Linq.2.1.30214.0\lib\Net40\System.Reactive.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive.PlatformServices">
+      <HintPath>..\packages\Rx-PlatformServices.2.1.30214.0\lib\Net40\System.Reactive.PlatformServices.dll</HintPath>
+    </Reference>
     <Reference Include="System.Transactions" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq">
@@ -62,14 +76,12 @@
     </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Wintellect.Threading, Version=4.2.3353.29511, Culture=neutral, PublicKeyToken=167f00fdf109b063, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\SharedLibs\Wintellect.Threading.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Exceptions\CannotSendWhileWaitingForAllMessagesToBeSentException.cs" />
     <Compile Include="Exceptions\QueueDoesNotExistsException.cs" />
+    <Compile Include="Exceptions\RevertSendException.cs" />
+    <Compile Include="Exceptions\UnexpectedReceivedMessageFormatException.cs" />
     <Compile Include="Monitoring\ImmediatelyRecordingCountersProvider.cs" />
     <Compile Include="Monitoring\IPerformanceCountersProvider.cs" />
     <Compile Include="Monitoring\IInboundPerfomanceCounters.cs" />
@@ -86,18 +98,26 @@
     <Compile Include="Model\HistoryMessage.cs" />
     <Compile Include="Model\PersistentMessageToSend.cs" />
     <Compile Include="Monitoring\TransactionalPerformanceCountersProvider.cs" />
+    <Compile Include="ObservableQueue.cs" />
+    <Compile Include="Protocol\Chunks\ReadRevert.cs" />
+    <Compile Include="Protocol\Chunks\WriteAcknowledgement.cs" />
     <Compile Include="Protocol\Endpoint.cs" />
     <Compile Include="Internal\QueuedMessagesSender.cs" />
     <Compile Include="Model\PersistentMessage.cs" />
     <Compile Include="Model\Message.cs" />
     <Compile Include="Model\MessageId.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Protocol\Chunks\Chunk.cs" />
     <Compile Include="Protocol\ProtocolConstants.cs" />
     <Compile Include="Protocol\IMessageAcceptance.cs" />
+    <Compile Include="Protocol\ReactiveReceiver.cs" />
+    <Compile Include="Protocol\Chunks\ReadReceived.cs" />
     <Compile Include="Protocol\Receiver.cs" />
     <Compile Include="Protocol\Sender.cs" />
     <Compile Include="Protocol\SerializationExtensions.cs" />
     <Compile Include="Protocol\StreamUtil.cs" />
+    <Compile Include="Protocol\Chunks\WriteLength.cs" />
+    <Compile Include="Protocol\Chunks\WriteMessage.cs" />
     <Compile Include="Queue.cs" />
     <Compile Include="QueueManager.cs" />
     <Compile Include="QueueManagerConfiguration.cs" />
@@ -120,9 +140,7 @@
     <Compile Include="Utils\ThreadSafeSet.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\ayende-open-source.snk">
-      <Link>ayende-open-source.snk</Link>
-    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -141,6 +159,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

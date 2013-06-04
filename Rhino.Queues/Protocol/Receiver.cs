@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -8,7 +7,7 @@ using System.Text;
 using Common.Logging;
 using Rhino.Queues.Exceptions;
 using Rhino.Queues.Model;
-using Wintellect.Threading.AsyncProgModel;
+using System.Threading.Tasks;
 
 namespace Rhino.Queues.Protocol
 {
@@ -62,7 +61,26 @@ namespace Rhino.Queues.Protocol
         {
             listener = new TcpListener(endpointToListenTo);
             listener.Start();
-            listener.BeginAcceptTcpClient(BeginAcceptTcpClientCallback, null);
+            AcceptTcpClientAsync();
+        }
+
+        private async void AcceptTcpClientAsync()
+        {
+            try
+            {
+                var client = await listener.AcceptTcpClientAsync();
+                logger.DebugFormat("Accepting connection from {0}", client.Client.RemoteEndPoint);
+                await ProcessRequest(client);
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                logger.Warn("Error on EndAcceptTcpClient", ex);
+            }
+            AcceptTcpClientAsync();
         }
 
         private static int SelectAvailablePort()
@@ -88,55 +106,7 @@ namespace Rhino.Queues.Protocol
             return candidatePort;
         }
 
-        private void BeginAcceptTcpClientCallback(IAsyncResult result)
-		{
-			TcpClient client;
-			try
-			{
-				client = listener.EndAcceptTcpClient(result);
-			}
-			catch (ObjectDisposedException)
-			{
-				return;
-			}
-			catch (Exception ex)
-			{
-				logger.Warn("Error on EndAcceptTcpClient", ex);
-				StartAcceptingTcpClient();
-				return;
-			}
-
-            logger.DebugFormat("Accepting connection from {0}", client.Client.RemoteEndPoint);
-            var enumerator = new AsyncEnumerator(
-                "Receiver from " + client.Client.RemoteEndPoint
-                );
-            enumerator.BeginExecute(ProcessRequest(client, enumerator), ar =>
-            {
-                try
-                {
-                    enumerator.EndExecute(ar);
-                }
-                catch (Exception exception)
-                {
-                    logger.Warn("Failed to recieve message", exception);
-                }
-            });
-
-			StartAcceptingTcpClient();
-		}
-
-		private void StartAcceptingTcpClient()
-		{
-			try
-			{
-				listener.BeginAcceptTcpClient(BeginAcceptTcpClientCallback, null);
-			}
-			catch (ObjectDisposedException)
-			{
-			}
-		}
-
-        private IEnumerator<int> ProcessRequest(TcpClient client, AsyncEnumerator ae)
+        private async Task ProcessRequest(TcpClient client)
         {
             try
             {
@@ -147,61 +117,34 @@ namespace Rhino.Queues.Protocol
 
                     var lenOfDataToReadBuffer = new byte[sizeof(int)];
 
-                    var lenEnumerator = new AsyncEnumerator(ae.ToString());
                     try
                     {
-                        lenEnumerator.BeginExecute(
-                            StreamUtil.ReadBytes(lenOfDataToReadBuffer, stream, lenEnumerator, "length data",false), ae.End());
+                        await stream.ReadBytesAsync(lenOfDataToReadBuffer, "length data", false);
                     }
                     catch (Exception exception)
                     {
                         logger.Warn("Unable to read length data from " + sender, exception);
-                        yield break;
-                    }
-
-                    yield return 1;
-
-                    try
-                    {
-                        lenEnumerator.EndExecute(ae.DequeueAsyncResult());
-                    }
-                    catch (Exception exception)
-                    {
-                        logger.Warn("Unable to read length data from " + sender, exception);
-                        yield break;
+                        return;
                     }
 
                     var lengthOfDataToRead = BitConverter.ToInt32(lenOfDataToReadBuffer, 0);
                     if (lengthOfDataToRead < 0)
                     {
                         logger.WarnFormat("Got invalid length {0} from sender {1}", lengthOfDataToRead, sender);
-                        yield break;
+                        return;
                     }
                     logger.DebugFormat("Reading {0} bytes from {1}", lengthOfDataToRead, sender);
 
                     var buffer = new byte[lengthOfDataToRead];
 
-                    var readBufferEnumerator = new AsyncEnumerator(ae.ToString());
                     try
                     {
-                        readBufferEnumerator.BeginExecute(
-                            StreamUtil.ReadBytes(buffer, stream, readBufferEnumerator, "message data", false), ae.End());
+                        await stream.ReadBytesAsync(buffer, "message data", false);
                     }
                     catch (Exception exception)
                     {
                         logger.Warn("Unable to read message data from " + sender, exception);
-                        yield break;
-                    }
-                    yield return 1;
-
-                    try
-                    {
-                        readBufferEnumerator.EndExecute(ae.DequeueAsyncResult());
-                    }
-                    catch (Exception exception)
-                    {
-                        logger.Warn("Unable to read message data from " + sender, exception);
-                        yield break;
+                        return;
                     }
 
                     Message[] messages = null;
@@ -219,25 +162,13 @@ namespace Rhino.Queues.Protocol
                     {
                         try
                         {
-                            stream.BeginWrite(ProtocolConstants.SerializationFailureBuffer, 0,
-                                              ProtocolConstants.SerializationFailureBuffer.Length, ae.End(), null);
+                            await stream.WriteAsync(ProtocolConstants.SerializationFailureBuffer, 0, ProtocolConstants.SerializationFailureBuffer.Length);
                         }
                         catch (Exception exception)
                         {
                             logger.Warn("Unable to send serialization format error to " + sender, exception);
-                            yield break;
+                            return;
                         }
-                        yield return 1;
-                        try
-                        {
-                            stream.EndWrite(ae.DequeueAsyncResult());
-                        }
-                        catch (Exception exception)
-                        {
-                            logger.Warn("Unable to send serialization format error to " + sender, exception);
-                        }
-
-                        yield break;
                     }
 
                     IMessageAcceptance acceptance = null;
@@ -262,78 +193,41 @@ namespace Rhino.Queues.Protocol
                     {
                         try
                         {
-                            stream.BeginWrite(errorBytes, 0,
-                                              errorBytes.Length, ae.End(), null);
+                            await stream.WriteAsync(errorBytes, 0, errorBytes.Length);
                         }
                         catch (Exception exception)
                         {
                             logger.Warn("Unable to send processing failure from " + sender, exception);
-                            yield break;
+                            return;
                         }
-                        yield return 1;
-                        try
-                        {
-                            stream.EndWrite(ae.DequeueAsyncResult());
-                        }
-                        catch (Exception exception)
-                        {
-                            logger.Warn("Unable to send processing failure from " + sender, exception);
-                        }
-                        yield break;
+                        return;
                     }
 
                     logger.DebugFormat("Sending reciept notice to {0}", sender);
                     try
                     {
-                        stream.BeginWrite(ProtocolConstants.RecievedBuffer, 0, ProtocolConstants.RecievedBuffer.Length,
-                                          ae.End(), null);
+                        await stream.WriteAsync(ProtocolConstants.ReceivedBuffer, 0, ProtocolConstants.ReceivedBuffer.Length);
                     }
                     catch (Exception exception)
                     {
                         logger.Warn("Could not send reciept notice to " + sender, exception);
                         acceptance.Abort();
-                        yield break;
-                    }
-                    yield return 1;
-
-                    try
-                    {
-                        stream.EndWrite(ae.DequeueAsyncResult());
-                    }
-                    catch (Exception exception)
-                    {
-                        logger.Warn("Could not send reciept notice to " + sender, exception);
-                        acceptance.Abort();
-                        yield break;
+                        return;
                     }
 
                     logger.DebugFormat("Reading acknowledgement about accepting messages to {0}", sender);
 
                     var acknowledgementBuffer = new byte[ProtocolConstants.AcknowledgedBuffer.Length];
 
-                    var readAcknoweldgement = new AsyncEnumerator(ae.ToString());
                     try
                     {
-                        readAcknoweldgement.BeginExecute(
-                            StreamUtil.ReadBytes(acknowledgementBuffer, stream, readAcknoweldgement, "acknowledgement", false),
-                            ae.End());
+                        await stream.ReadBytesAsync(acknowledgementBuffer, "acknowledgement", false);
                     }
                     catch (Exception exception)
                     {
                         logger.Warn("Error reading acknowledgement from " + sender, exception);
                         acceptance.Abort();
-                        yield break;
-                    }
-                    yield return 1;
-                    try
-                    {
-                        readAcknoweldgement.EndExecute(ae.DequeueAsyncResult());
-                    }
-                    catch (Exception exception)
-                    {
-                        logger.Warn("Error reading acknowledgement from " + sender, exception);
-                        acceptance.Abort();
-                        yield break;
+                        return;
                     }
 
                     var senderResponse = Encoding.Unicode.GetString(acknowledgementBuffer);
@@ -358,33 +252,13 @@ namespace Rhino.Queues.Protocol
 
                     if (commitSuccessful == false)
                     {
-                        bool writeSuccessful;
                         try
                         {
-                            stream.BeginWrite(ProtocolConstants.RevertBuffer, 0, ProtocolConstants.RevertBuffer.Length,
-                                              ae.End(),
-                                              null);
-                            writeSuccessful = true;
+                            await stream.WriteAsync(ProtocolConstants.RevertBuffer, 0, ProtocolConstants.RevertBuffer.Length);
                         }
                         catch (Exception e)
                         {
                             logger.Warn("Unable to send revert message to " + sender, e);
-                            writeSuccessful = false;
-                        }
-
-                        if (writeSuccessful)
-                        {
-                            yield return 1;
-
-
-                            try
-                            {
-                                stream.EndWrite(ae.DequeueAsyncResult());
-                            }
-                            catch (Exception exception)
-                            {
-                                logger.Warn("Unable to send revert message to " + sender, exception);
-                            }
                         }
                     }
                 }

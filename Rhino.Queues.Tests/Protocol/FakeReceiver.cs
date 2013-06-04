@@ -64,7 +64,7 @@ namespace Rhino.Queues.Tests.Protocol
                             return;
                         }
 
-                        stream.Write(ProtocolConstants.RecievedBuffer, 0, ProtocolConstants.RecievedBuffer.Length);
+                        stream.Write(ProtocolConstants.ReceivedBuffer, 0, ProtocolConstants.ReceivedBuffer.Length);
 
                         if (DisconnectAfterSendingReciept)
                             return;

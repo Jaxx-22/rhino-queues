@@ -153,13 +153,13 @@ namespace Rhino.Queues.Tests.Protocol
 
                         logger.DebugFormat("Successfully wrote to {0}", Destination);
 
-                        var recieveBuffer = new byte[ProtocolConstants.RecievedBuffer.Length];
+                        var recieveBuffer = new byte[ProtocolConstants.ReceivedBuffer.Length];
                         var readConfirmationEnumerator = new AsyncEnumerator();
 
                         try
                         {
-                            readConfirmationEnumerator.BeginExecute(
-                                StreamUtil.ReadBytes(recieveBuffer, stream, readConfirmationEnumerator, "recieve confirmation", false), ae.End());
+                            //readConfirmationEnumerator.BeginExecute(
+                            //    StreamUtil.ReadBytes(recieveBuffer, stream, readConfirmationEnumerator, "recieve confirmation", false), ae.End());
                         }
                         catch (Exception exception)
                         {
@@ -192,7 +192,7 @@ namespace Rhino.Queues.Tests.Protocol
                             Failure(new QueueDoesNotExistsException());
                             yield break;
                         }
-                        else if(recieveRespone!=ProtocolConstants.Recieved)
+                        else if(recieveRespone!=ProtocolConstants.Received)
                         {
                             logger.WarnFormat(
                                 "Response from reciever {0} is not the expected one, unexpected response was: {1}",
@@ -238,8 +238,8 @@ namespace Rhino.Queues.Tests.Protocol
                         bool startingToReadFailed = false;
                         try
                         {
-                            readRevertMessage.BeginExecute(
-                                StreamUtil.ReadBytes(buffer, stream, readRevertMessage, "revert", true), ae.End());
+                            //readRevertMessage.BeginExecute(
+                            //    StreamUtil.ReadBytes(buffer, stream, readRevertMessage, "revert", true), ae.End());
                         }
                         catch (Exception)
                         {
