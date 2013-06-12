@@ -5,7 +5,7 @@ namespace Rhino.Queues.Protocol.Chunks
 {
     public class WriteAcknowledgement : Chunk
     {
-        public WriteAcknowledgement(string destination) : base(destination)
+        public WriteAcknowledgement(string sender) : base(sender)
         {
         }
 

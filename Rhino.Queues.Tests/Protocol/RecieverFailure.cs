@@ -43,7 +43,7 @@ namespace Rhino.Queues.Tests.Protocol
 
                 var warn = (from e in adapter.LoggerEvents
                             where e.Level == LogLevel.Warn &&
-                                  e.RenderedMessage.StartsWith("Unable to read length data from")
+                                  e.RenderedMessage.StartsWith("Could not process Reading Length")
                             select e).FirstOrDefault();
 
                 Assert.NotNull(warn);
@@ -68,7 +68,7 @@ namespace Rhino.Queues.Tests.Protocol
 
                 var warn = (from e in adapter.LoggerEvents
                             where e.Level == LogLevel.Warn &&
-                                  e.RenderedMessage.StartsWith("Unable to read length data from")
+                                  e.RenderedMessage.StartsWith("Could not process Reading Length")
                             select e).FirstOrDefault();
 
                 Assert.NotNull(warn);
@@ -93,7 +93,7 @@ namespace Rhino.Queues.Tests.Protocol
 
                 var warn = (from e in adapter.LoggerEvents
                             where e.Level == LogLevel.Warn &&
-                                  e.RenderedMessage.StartsWith("Got invalid length -2")
+                                  e.RenderedMessage.Contains("Got invalid length -2")
                             select e).FirstOrDefault();
 
                 Assert.NotNull(warn);
@@ -120,7 +120,7 @@ namespace Rhino.Queues.Tests.Protocol
 
                 var warn = (from e in adapter.LoggerEvents
                             where e.Level == LogLevel.Warn &&
-                                  e.RenderedMessage.StartsWith("Unable to read message data")
+                                  e.RenderedMessage.StartsWith("Could not process Reading Message")
                             select e).FirstOrDefault();
 
                 Assert.NotNull(warn);

@@ -33,49 +33,52 @@ namespace Rhino.Queues.Protocol
             Commit = () => { };
         }
 
-        public async void Send()
+        public Task Send()
         {
             _logger.DebugFormat("Starting to send {0} messages to {1}", Messages.Length, Destination);
-            await SendInternalAsync();
+            return SendInternalAsync();
         }
 
         private async Task SendInternalAsync()
         {
             using (var client = new TcpClient())
             {
-                var connected = await Connect(client);
-                if (!connected)
-                    return;
-
-                using (var stream = client.GetStream())
+                try
                 {
-                    var buffer = Messages.Serialize();
-                    MessageBookmark[] bookmarks = null;
-                    try
+                    var connected = await Connect(client);
+                    if (!connected)
+                        return;
+
+                    using (var stream = client.GetStream())
                     {
-                        await new WriteLength(buffer.Length, Destination.ToString()).ProcessAsync(stream);
-                        await new WriteMessage(buffer, Destination.ToString()).ProcessAsync(stream);
-                        await new ReadReceived(Destination.ToString()).ProcessAsync(stream);
-                        await new WriteAcknowledgement(Destination.ToString()).ProcessAsync(stream);
-                        bookmarks = Success();
-                        await new ReadRevert(Destination.ToString()).ProcessAsync(stream);
-                        Commit();
+                        var buffer = Messages.Serialize();
+                        MessageBookmark[] bookmarks = null;
+                        try
+                        {
+                            await new WriteLength(buffer.Length, Destination.ToString()).ProcessAsync(stream);
+                            await new WriteMessage(buffer, Destination.ToString()).ProcessAsync(stream);
+                            await new ReadReceived(Destination.ToString()).ProcessAsync(stream);
+                            await new WriteAcknowledgement(Destination.ToString()).ProcessAsync(stream);
+                            bookmarks = Success();
+                            await new ReadRevert(Destination.ToString()).ProcessAsync(stream);
+                            Commit();
+                        }
+                        catch (RevertSendException)
+                        {
+                            _logger.WarnFormat("Got back revert message from receiver {0}, reverting send", Destination);
+                            Revert(bookmarks);
+                        }
+                        catch (Exception exception)
+                        {
+                            Failure(exception);
+                        }
                     }
-                    catch (RevertSendException)
-                    {
-                        _logger.WarnFormat("Got back revert message from receiver {0}, reverting send", Destination);
-                        Revert(bookmarks);
-                    }
-                    catch (Exception exception)
-                    {
-                        Failure(exception);
-                    }
-                    finally
-                    {
-                        var completed = SendCompleted;
-                        if (completed != null)
-                            completed();
-                    }
+                }
+                finally
+                {
+                    var completed = SendCompleted;
+                    if (completed != null)
+                        completed();
                 }
             }
         }

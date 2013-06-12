@@ -7,7 +7,7 @@ namespace Rhino.Queues.Protocol.Chunks
 {
     public class ReadReceived : Chunk
     {
-        public ReadReceived(string destination) : base(destination)
+        public ReadReceived(string sender) : base(sender)
         {
         }
 
@@ -22,13 +22,13 @@ namespace Rhino.Queues.Protocol.Chunks
             var recieveRespone = Encoding.Unicode.GetString(recieveBuffer);
             if (recieveRespone == ProtocolConstants.QueueDoesNotExists)
             {
-                _logger.WarnFormat("Response from reciever {0} is that queue does not exists", _destination);
+                _logger.WarnFormat("Response from reciever {0} is that queue does not exists", _endpoint);
                 throw new QueueDoesNotExistsException();
             }
             if (recieveRespone != ProtocolConstants.Received)
             {
                 _logger.WarnFormat("Response from receiver {0} is not the expected one, unexpected response was: {1}",
-                    _destination, recieveRespone);
+                    _endpoint, recieveRespone);
                 throw new UnexpectedReceivedMessageFormatException();
             }
         }

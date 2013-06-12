@@ -28,7 +28,7 @@ namespace Rhino.Queues.Tests
             receiver.Start();
         }
 
-        [Fact]//(Skip = "Need to make transaction strategy first")]
+        [Fact(Skip = "Need to make transaction strategy first")]
         public void CanSendToQueue()
         {
             var handle = new ManualResetEvent(false);

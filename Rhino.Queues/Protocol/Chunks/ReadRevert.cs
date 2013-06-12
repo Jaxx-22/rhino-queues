@@ -8,7 +8,7 @@ namespace Rhino.Queues.Protocol.Chunks
 {
     public class ReadRevert : Chunk
     {
-        public ReadRevert(string destination) : base(destination)
+        public ReadRevert(string sender) : base(sender)
         {
         }
 

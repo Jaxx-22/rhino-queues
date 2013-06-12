@@ -8,7 +8,7 @@ namespace Rhino.Queues.Protocol.Chunks
     {
         private readonly int _length;
 
-        public WriteLength(int length, string destination) : base(destination)
+        public WriteLength(int length, string sender) : base(sender)
         {
             _length = length;
         }

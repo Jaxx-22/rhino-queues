@@ -7,7 +7,7 @@ namespace Rhino.Queues.Protocol.Chunks
     {
         private readonly byte[] _buffer;
 
-        public WriteMessage(byte[] buffer, string destination) : base(destination)
+        public WriteMessage(byte[] buffer, string sender) : base(sender)
         {
             _buffer = buffer;
         }

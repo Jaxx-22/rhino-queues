@@ -79,6 +79,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Exceptions\CannotSendWhileWaitingForAllMessagesToBeSentException.cs" />
+    <Compile Include="Exceptions\InvalidAcknowledgementException.cs" />
+    <Compile Include="Exceptions\InvalidLengthException.cs" />
     <Compile Include="Exceptions\QueueDoesNotExistsException.cs" />
     <Compile Include="Exceptions\RevertSendException.cs" />
     <Compile Include="Exceptions\UnexpectedReceivedMessageFormatException.cs" />
@@ -99,8 +101,15 @@
     <Compile Include="Model\PersistentMessageToSend.cs" />
     <Compile Include="Monitoring\TransactionalPerformanceCountersProvider.cs" />
     <Compile Include="ObservableQueue.cs" />
+    <Compile Include="Protocol\Chunks\ReadAcknowledgement.cs" />
+    <Compile Include="Protocol\Chunks\ReadLength.cs" />
+    <Compile Include="Protocol\Chunks\ReadMessage.cs" />
     <Compile Include="Protocol\Chunks\ReadRevert.cs" />
     <Compile Include="Protocol\Chunks\WriteAcknowledgement.cs" />
+    <Compile Include="Protocol\Chunks\WriteProcessingError.cs" />
+    <Compile Include="Protocol\Chunks\WriteReceived.cs" />
+    <Compile Include="Protocol\Chunks\WriteRevert.cs" />
+    <Compile Include="Protocol\Chunks\WriteSerializationError.cs" />
     <Compile Include="Protocol\Endpoint.cs" />
     <Compile Include="Internal\QueuedMessagesSender.cs" />
     <Compile Include="Model\PersistentMessage.cs" />
@@ -108,14 +117,15 @@
     <Compile Include="Model\MessageId.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Protocol\Chunks\Chunk.cs" />
+    <Compile Include="Protocol\PortFinder.cs" />
     <Compile Include="Protocol\ProtocolConstants.cs" />
     <Compile Include="Protocol\IMessageAcceptance.cs" />
-    <Compile Include="Protocol\ReactiveReceiver.cs" />
     <Compile Include="Protocol\Chunks\ReadReceived.cs" />
     <Compile Include="Protocol\Receiver.cs" />
+    <Compile Include="Protocol\ReceivingProtocolCoordinator.cs" />
     <Compile Include="Protocol\Sender.cs" />
     <Compile Include="Protocol\SerializationExtensions.cs" />
-    <Compile Include="Protocol\StreamUtil.cs" />
+    <Compile Include="Protocol\StreamExtensions.cs" />
     <Compile Include="Protocol\Chunks\WriteLength.cs" />
     <Compile Include="Protocol\Chunks\WriteMessage.cs" />
     <Compile Include="Queue.cs" />
